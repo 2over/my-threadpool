@@ -12,12 +12,12 @@
 extern Taskpool taskpool;
 extern Threadpool threadpool;
 
-void* execute_task(void* args) {
-    Thread* Self = static_cast<Thread *>(args);
+void *execute_task(void *args) {
+    Thread *Self = static_cast<Thread *>(args);
 
     INFO_PRINT("[%s] 开始执行任务\n", Self->name().c_str());
 
-    for(;;) {
+    for (;;) {
         /**
          * 取人物执行
          * 加锁，同一时刻只有一个线程可以读写任务池
@@ -33,7 +33,8 @@ void* execute_task(void* args) {
              * 此段代码一定要放在wait下面，否则会导致某些线程执行完任务就退出了
              * 虽然也可以，但是不符合线程池理论
              */
-            INFO_PRINT("[%s] live=%d, core=%d\n", Self->name().c_str(), threadpool.live_thread_size(), threadpool.core_pool_size());
+            INFO_PRINT("[%s] live=%d, core=%d\n", Self->name().c_str(), threadpool.live_thread_size(),
+                       threadpool.core_pool_size());
             if (threadpool.live_thread_size() > threadpool.core_pool_size()) {
                 INFO_PRINT("[%s] 销毁\n", Self->name().c_str());
 
@@ -79,7 +80,50 @@ void* execute_task(void* args) {
         threadpool.inc_idle_thread_size();
         pthread_mutex_unlock(threadpool._lock);
 
-        INFO_PRINT("")
+        INFO_PRINT("[%s] 任务执行结束\n", Self->name().c_str());
+
+    }
+    return 0;
+}
+
+void Threadpool::run() {
+    for (int i = 0; i < _core_pool_size; ++i) {
+        Thread *t = new Thread(execute_task, NULL, i + 1);
+
+        thread_ids()[i] = t;
+
+        t->run();
     }
 }
+
+Threadpool::Threadpool(int core_pool_size, int max_pool_size) {
+    _core_pool_size = core_pool_size;
+    _max_pool_size = max_pool_size;
+
+    _busy_thread_size = 0;
+    _idle_thread_size = _core_pool_size;
+    _live_thread_size = _core_pool_size;
+
+    _state = NEW;
+
+    _thread_ids = static_cast<Thread **>(calloc(_max_pool_size, sizeof(Thread *)));
+
+    pthread_mutex_init(_lock, NULL);
+    pthread_cond_init(_cond, NULL);
+}
+
+void Threadpool::expand() {
+    for (int i = _live_thread_size; i < _max_pool_size; i++) {
+        Thread* t = new Thread(execute_task, NULL, i + 1);
+        thread_ids()[i] = t;
+
+        t->run();
+
+        inc_live_thread_size();
+    }
+}
+
+void Threadpool::shrink() {
+    pthread_cond_signal(taskpool._cond);
+};
 
