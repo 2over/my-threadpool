@@ -28,6 +28,7 @@ void* thread_manager_do(void* args) {
         busy_thread_size = threadpool.busy_thread_size();
         live_thread_size = threadpool.live_thread_size();
         max_pool_size = threadpool.max_pool_size();
+        task_count = taskpool.task_count();
 
         INFO_PRINT("busy=%d, live=%d, max=%d, task_count=%d\n", busy_thread_size, live_thread_size, max_pool_size, task_count);
 

@@ -78,7 +78,7 @@ void Thread::run() {
 
             break;
         } else {
-            INFO_PRINT("[%s] 等待线程完成初始化 %d \n", name().c_str(), get_state());
+//            INFO_PRINT("[%s] 等待线程完成初始化 %d \n", name().c_str(), get_state());
         }
     }
 
