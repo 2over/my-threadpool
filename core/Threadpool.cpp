@@ -19,7 +19,7 @@ void *execute_task(void *args) {
 
     for (;;) {
         /**
-         * 取人物执行
+         * 取任务执行
          * 加锁，同一时刻只有一个线程可以读写任务池
          */
         pthread_mutex_lock(taskpool._lock);
@@ -27,6 +27,10 @@ void *execute_task(void *args) {
         while (0 == taskpool.task_count()) {
             INFO_PRINT("[%s] 暂无任务执行, 进入阻塞\n", Self->name().c_str());
 
+            // wait做了什么
+            // 1.执行了unlock
+            // 2.线程进入阻塞，阻塞在条件变量上
+            // 3.唤醒之后又会进行lock
             pthread_cond_wait(taskpool._cond, taskpool._lock);
             /**
              * 如果任务池中没有任务却被唤醒，表示是在销毁线程

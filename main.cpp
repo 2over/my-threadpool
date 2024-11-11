@@ -35,6 +35,9 @@ int main() {
             ManagerThread::_locked = false;
         }
 
+        // 优化点:
+        // 1.如果任务超过核心线程数，全部唤醒
+        // 2.如果小于核心线程数，有几个任务唤醒几个，减少任务争抢的消耗
         pthread_cond_broadcast(taskpool._cond);
         INFO_PRINT("[主线程]唤醒管理者线程、线程池开始工作\n");
     }
