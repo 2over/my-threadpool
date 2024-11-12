@@ -51,6 +51,10 @@ void *execute_task(void *args) {
 
             }
         }
+        // 中断
+//        if (Self->interrupted()) {
+//            pthread_exit(NULL);
+//        }
 
         // 获取任务、解锁，执行任务
         INFO_PRINT("[%s] 任务池中有任务了，开始抢任务\n", Self->name().c_str());
@@ -129,5 +133,11 @@ void Threadpool::expand() {
 
 void Threadpool::shrink() {
     pthread_cond_signal(taskpool._cond);
+    // 杀死指定线程
+//    for (int i = 0; i < _live_thread_size; i++) {
+//        if ("t0" == thread_ids()[i]->name()) {
+//            thread_ids()[i]->set_interrupted(true);
+//        }
+//    }
 };
 
