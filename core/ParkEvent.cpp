@@ -6,7 +6,7 @@
 #include "Thread.h"
 
 void ParkEvent::park() {
-    // 这里为什么要加锁? 因为条件变量wiat必须要先加锁
+    // 这里为什么要加锁? 因为条件变量wait必须要先加锁
     pthread_mutex_lock(_lock);
 
     _state = 1;
